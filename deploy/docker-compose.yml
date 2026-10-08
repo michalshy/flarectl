@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    environment: { POSTGRES_PASSWORD: flare, POSTGRES_DB: flare }
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+  server:
+    build: .
+    command: ["flare", "server"]
+    environment: { DATABASE_URL: postgres://postgres:flare@postgres/flare }
+    depends_on: { postgres: { condition: service_healthy } }
+  worker:
+    build: .
+    command: ["flare", "worker"]
+    environment: { FLARE_URL: http://server:8080 }
+    depends_on: [server]
+  ui:
+    build: ./ui
+    ports: ["3000:80"]
+    depends_on: [server]
