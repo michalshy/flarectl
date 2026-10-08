@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-anyhow = "1.0.104"
+anyhow.workspace = true
 axum.workspace = true
 serde.workspace = true
 tokio.workspace = true

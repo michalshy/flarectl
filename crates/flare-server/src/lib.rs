@@ -1,8 +1,6 @@
 use axum::{Router, routing::get};
 
 pub async fn run(addr: std::net::SocketAddr) -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
-
     let app = Router::new()
         .route("/v1/health", get(health))
         .route("/v1/workers", get(workers));

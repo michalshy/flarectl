@@ -1,6 +1,17 @@
+[[bin]]
+name = "flare"
+path = "src/main.rs"
+
 [package]
 name = "flare-cli"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+flare-server = { path = "../flare-server" }
+flare-worker = { path = "../flare-worker" }
+clap = { version = "4", features = ["derive", "env"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tokio.workspace = true
+anyhow.workspace = true
