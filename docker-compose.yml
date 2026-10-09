@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: flare
+      POSTGRES_PASSWORD: flare
+      POSTGRES_DB: flare
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flare -d flare"]
+      interval: 2s
+      retries: 15
+
+  server:
+    build: .
+    image: flare:dev
+    command: ["flare", "server"]
+    environment:
+      DATABASE_URL: postgres://flare:flare@postgres/flare
+      RUST_LOG: info
+    ports: ["8080:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: on-failure
+
+volumes:
+  pgdata:

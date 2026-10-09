@@ -12,8 +12,10 @@ enum Command {
     Server {
         #[arg(long, env = "FLARE_LISTEN", default_value = "0.0.0.0:8080")]
         listen: std::net::SocketAddr,
+        #[arg(long, env = "DATABASE_URL")]
+        db_url: String,
     },
-    Workder {
+    Worker {
         #[arg(long, env = "FLARE_URL", default_value = "http://localhost:8080")]
         url: String,
     },
@@ -24,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     match Cli::parse().command {
-        Command::Server { listen } => flare_server::run(listen).await,
-        Command::Workder { url } => flare_worker::run(url).await,
+        Command::Server { listen, db_url } => flare_server::run(listen, &db_url).await,
+        Command::Worker { url } => flare_worker::run(url).await,
     }
 }

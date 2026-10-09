@@ -1,19 +1,6 @@
-use axum::{Router, routing::get};
+mod app;
 
-pub async fn run(addr: std::net::SocketAddr) -> anyhow::Result<()> {
-    let app = Router::new()
-        .route("/v1/health", get(health))
-        .route("/v1/workers", get(workers));
-
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await?;
-    Ok(())
-}
-
-async fn health() -> &'static str {
-    "Ok."
-}
-
-async fn workers() -> &'static str {
-    "Here will be many many workers."
+pub async fn run(addr: std::net::SocketAddr, db_url: &str) -> anyhow::Result<()> {
+    let state = app::AppState::connect(db_url).await?;
+    app::serve(state, addr).await
 }
