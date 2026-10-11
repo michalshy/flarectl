@@ -1,7 +1,6 @@
-pub async fn health() -> &'static str {
-    "Ok."
-}
+pub mod health;
+pub mod workers;
 
-pub async fn workers() -> &'static str {
-    "Here will be many many workers."
-}
+// export
+pub use health::health;
+pub use workers::workers;
