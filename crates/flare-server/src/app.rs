@@ -1,6 +1,10 @@
+pub mod error;
 mod routes;
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{get, post, put},
+};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 
 #[derive(Clone)]
@@ -27,8 +31,14 @@ pub async fn serve(state: AppState, addr: std::net::SocketAddr) -> anyhow::Resul
 }
 
 fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/v1/health", get(routes::health))
-        .route("/v1/workers", get(routes::workers))
-        .with_state(state)
+    let v1 = Router::new()
+        .route("/health", get(routes::health))
+        .route("/workers", get(routes::workers::get))
+        .route(
+            "/workers/{id}",
+            get(routes::workers::get_id).put(routes::workers::put_id),
+        )
+        .route("workers/{id}/heartbeat", post(routes::workers::heartbeat));
+
+    Router::new().nest("v1", v1).with_state(state)
 }
