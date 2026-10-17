@@ -3,7 +3,7 @@ mod routes;
 
 use axum::{
     Router,
-    routing::{get, post, put},
+    routing::{get, post},
 };
 use sqlx::{PgPool, postgres::PgPoolOptions};
 
@@ -38,7 +38,7 @@ fn router(state: AppState) -> Router {
             "/workers/{id}",
             get(routes::workers::get_id).put(routes::workers::put_id),
         )
-        .route("workers/{id}/heartbeat", post(routes::workers::heartbeat));
+        .route("/workers/{id}/heartbeat", post(routes::workers::heartbeat));
 
-    Router::new().nest("v1", v1).with_state(state)
+    Router::new().nest("/v1", v1).with_state(state)
 }

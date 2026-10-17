@@ -21,6 +21,9 @@ impl IntoResponse for AppError {
 
 impl From<sqlx::Error> for AppError {
     fn from(value: sqlx::Error) -> Self {
-        AppError::Db(value)
+        match value {
+            sqlx::Error::RowNotFound => AppError::NotFound,
+            _ => AppError::Db(value),
+        }
     }
 }

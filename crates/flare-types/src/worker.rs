@@ -14,7 +14,7 @@ pub struct Worker {
 
 /// Already registered worker, present in database
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RegisteredWorker {
+pub struct RegisterWorker {
     pub name: String,
     pub version: Option<String>,
 }
