@@ -27,7 +27,10 @@ ps: ## Show container status
 psql: ## Open psql in the postgres container
 	docker compose exec postgres psql -U flare -d flare
 
-rebuild: ## Rebuild and restart only the server container
+prepare: ## Refresh sqlx offline query cache (.sqlx/), needs postgres running
+	cargo sqlx prepare --workspace
+
+rebuild: prepare ## Rebuild and restart only the server container
 	docker compose up -d --build --no-deps --wait server
 
 # --- native development --------------------------------------------------
