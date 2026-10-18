@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-flare-types = { path = "../flare-types" }
+flare-types = { path = "../flare-types", features = ["sqlx"] }
 serde_json.workspace = true
 uuid.workspace = true
 anyhow.workspace = true

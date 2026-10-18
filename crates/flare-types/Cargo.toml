@@ -8,3 +8,6 @@ uuid.workspace = true
 serde.workspace = true
 chrono.workspace = true
 serde_json.workspace = true
+sqlx = { workspace = true, optional = true }
+[features]
+sqlx = ["dep:sqlx"]

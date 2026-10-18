@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -8,8 +9,8 @@ pub struct Worker {
     pub name: String,
     pub version: Option<String>,
     pub labels: serde_json::Value,
-    pub registered_at: chrono::DateTime<chrono::Utc>,
-    pub last_seen_at: chrono::DateTime<chrono::Utc>,
+    pub registered_at: DateTime<Utc>,
+    pub last_seen_at: DateTime<Utc>,
 }
 
 /// Already registered worker, present in database
