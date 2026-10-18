@@ -1,5 +1,7 @@
 use crate::app::error::AppError;
+use axum::routing::{get, post, put};
 use axum::{
+    Router,
     extract::{Json, Path, State},
     http::StatusCode,
 };
@@ -8,14 +10,24 @@ use uuid::Uuid;
 
 use crate::app::AppState;
 
-pub async fn get(State(state): State<AppState>) -> Result<Json<Vec<Worker>>, AppError> {
-    let workers = sqlx::query_as!(Worker, "SELECT * FROM workers")
-        .fetch_all(&state.pool)
-        .await?;
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/workers", get(get_workers))
+        .route("/workers/{id}", put(put_worker).get(get_worker))
+        .route("/workers/{id}/heartbeat", post(post_heartbeat))
+}
+
+async fn get_workers(State(state): State<AppState>) -> Result<Json<Vec<Worker>>, AppError> {
+    let workers = sqlx::query_as!(
+        Worker,
+        "SELECT id, name, version, labels, registered_at, last_seen_at FROM workers"
+    )
+    .fetch_all(&state.pool)
+    .await?;
     Ok(Json(workers))
 }
 
-pub async fn get_id(
+async fn get_worker(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Worker>, AppError> {
@@ -29,7 +41,7 @@ pub async fn get_id(
     Ok(Json(worker))
 }
 
-pub async fn put_id(
+async fn put_worker(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(input): Json<RegisterWorker>,
@@ -54,7 +66,7 @@ pub async fn put_id(
     Ok(Json(inserted))
 }
 
-pub async fn heartbeat(
+async fn post_heartbeat(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<StatusCode, AppError> {

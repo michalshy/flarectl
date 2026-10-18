@@ -2,9 +2,9 @@ CREATE TABLE jobs (
     id              uuid PRIMARY KEY,
     key             text NOT NULL UNIQUE,
     name            text NOT NULL,
+    token           text NOT NULL UNIQUE,
     command         text,
     required_labels jsonb NOT NULL DEFAULT '{}',
-    token_hash      text NOT NULL UNIQUE,
     created_at      timestamptz NOT NULL DEFAULT now()
 );
 
@@ -37,11 +37,12 @@ CREATE TABLE steps (
     CHECK ((status = 'running') = (finished_at IS NULL))
 );
 
-CREATE TABLE run_events (
+CREATE TABLE events (
     id         bigserial PRIMARY KEY,
     run_id     uuid NOT NULL REFERENCES runs ON DELETE CASCADE,
     kind       text NOT NULL,
+    source     text NOT NULL CHECK (source IN ('server','client')),
     payload    jsonb NOT NULL DEFAULT '{}',
     created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX run_events_run_idx ON run_events (run_id, id);
+CREATE INDEX events_run_idx ON events (run_id, id);
