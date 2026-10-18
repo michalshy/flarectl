@@ -1,4 +1,3 @@
--- Add up migration script here
 CREATE TABLE workers (
     id              uuid PRIMARY KEY,
     name            text NOT NULL,
