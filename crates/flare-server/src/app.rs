@@ -1,3 +1,4 @@
+mod auth;
 pub mod error;
 mod routes;
 
@@ -31,5 +32,6 @@ fn router(state: AppState) -> Router {
     let v1 = Router::new()
         .route("/health", get(routes::health))
         .merge(routes::workers::router());
+
     Router::new().nest("/v1", v1).with_state(state)
 }

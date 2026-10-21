@@ -485,6 +485,8 @@ dependencies = [
  "anyhow",
  "axum",
  "flare-types",
+ "hex",
+ "rand",
  "serde",
  "serde_json",
  "sqlx",
