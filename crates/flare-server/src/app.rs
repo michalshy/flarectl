@@ -31,7 +31,8 @@ pub async fn serve(state: AppState, addr: std::net::SocketAddr) -> anyhow::Resul
 fn router(state: AppState) -> Router {
     let v1 = Router::new()
         .route("/health", get(routes::health))
-        .merge(routes::workers::router());
+        .merge(routes::workers::router())
+        .merge(routes::jobs::router());
 
     Router::new().nest("/v1", v1).with_state(state)
 }
