@@ -4,6 +4,7 @@ use serde_json::json;
 pub enum AppError {
     NotFound,
     Conflict,
+    Unauthorized,
     Validation(&'static str),
     Db(sqlx::Error),
 }
@@ -14,6 +15,7 @@ impl IntoResponse for AppError {
             AppError::NotFound => (StatusCode::NOT_FOUND, "not found"),
             AppError::Conflict => (StatusCode::CONFLICT, "conflicting unique value"),
             AppError::Validation(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthrozied"),
             AppError::Db(e) => {
                 tracing::error!(?e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal error")
