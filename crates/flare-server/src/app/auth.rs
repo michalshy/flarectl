@@ -1,7 +1,4 @@
-use axum::{
-    extract::FromRequestParts,
-    http::header::{AUTHORIZATION, CONTENT_LENGTH},
-};
+use axum::{extract::FromRequestParts, http::header::AUTHORIZATION};
 use rand::Rng;
 use uuid::Uuid;
 
@@ -21,14 +18,15 @@ impl FromRequestParts<AppState> for AuthJob {
             .headers
             .get(AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
-            .and_then(|s| s.strip_prefix("Bearer "))
+            .and_then(|s| s.split_once(' '))
+            .and_then(|(scheme, token)| scheme.eq_ignore_ascii_case("bearer").then(|| token))
             .ok_or(AppError::Unauthorized)?;
 
         let id = sqlx::query_scalar!("SELECT id FROM jobs WHERE token = $1", token)
             .fetch_optional(&state.pool)
             .await?
             .ok_or(AppError::Unauthorized)?;
-        Ok(AuthJob { id: id })
+        Ok(AuthJob { id })
     }
 }
 

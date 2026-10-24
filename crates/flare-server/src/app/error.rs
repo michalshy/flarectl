@@ -15,7 +15,7 @@ impl IntoResponse for AppError {
             AppError::NotFound => (StatusCode::NOT_FOUND, "not found"),
             AppError::Conflict => (StatusCode::CONFLICT, "conflicting unique value"),
             AppError::Validation(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthrozied"),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized"),
             AppError::Db(e) => {
                 tracing::error!(?e);
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal error")
