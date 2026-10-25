@@ -19,7 +19,7 @@ impl FromRequestParts<AppState> for AuthJob {
             .get(AUTHORIZATION)
             .and_then(|v| v.to_str().ok())
             .and_then(|s| s.split_once(' '))
-            .and_then(|(scheme, token)| scheme.eq_ignore_ascii_case("bearer").then(|| token))
+            .and_then(|(scheme, token)| scheme.eq_ignore_ascii_case("bearer").then_some(token))
             .ok_or(AppError::Unauthorized)?;
 
         let id = sqlx::query_scalar!("SELECT id FROM jobs WHERE token = $1", token)

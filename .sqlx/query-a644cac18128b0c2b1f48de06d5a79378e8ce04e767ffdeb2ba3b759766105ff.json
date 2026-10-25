@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE runs SET last_heartbeat_at = now() WHERE id = $1 AND job_id = $2 AND status = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a644cac18128b0c2b1f48de06d5a79378e8ce04e767ffdeb2ba3b759766105ff"
+}

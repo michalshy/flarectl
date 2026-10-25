@@ -31,6 +31,12 @@ impl From<sqlx::Error> for AppError {
             sqlx::Error::RowNotFound => AppError::NotFound,
             ref e
                 if e.as_database_error()
+                    .is_some_and(|e| e.is_foreign_key_violation()) =>
+            {
+                AppError::Validation("Referenced resource does not exist")
+            }
+            ref e
+                if e.as_database_error()
                     .is_some_and(|e| e.is_unique_violation()) =>
             {
                 AppError::Conflict
