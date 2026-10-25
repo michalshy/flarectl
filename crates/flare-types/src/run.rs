@@ -39,7 +39,7 @@ pub struct Run {
     pub id: Uuid,
     pub job_id: Uuid,
     pub worker_id: Option<Uuid>,
-    pub trigger: RunTrigger,
+    pub trigger: Option<RunTrigger>,
     pub status: RunStatus,
     pub failure_reason: Option<RunFailure>,
     pub started_at: DateTime<Utc>,
