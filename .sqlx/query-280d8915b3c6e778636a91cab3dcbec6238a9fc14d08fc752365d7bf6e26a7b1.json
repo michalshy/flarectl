@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE steps SET status = $1, finished_at = now()\n            WHERE run_id = $2 AND status = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "280d8915b3c6e778636a91cab3dcbec6238a9fc14d08fc752365d7bf6e26a7b1"
+}

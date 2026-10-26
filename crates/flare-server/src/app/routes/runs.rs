@@ -8,6 +8,7 @@ use axum::{
 };
 use flare_types::event::{EventKind, EventSource};
 use flare_types::run::{FinishRun, RunFailure, RunStatus, StartRun};
+use flare_types::step::StepStatus;
 use uuid::Uuid;
 
 use crate::app::AppState;
@@ -120,6 +121,16 @@ async fn post_finish(
             EventKind::Finished as _,
             EventSource::Server as _,
             payload
+        )
+        .execute(&mut *tx)
+        .await?;
+
+        sqlx::query!(
+            "UPDATE steps SET status = $1, finished_at = now()
+            WHERE run_id = $2 AND status = $3",
+            StepStatus::Failed as _,
+            id,
+            StepStatus::Running as _
         )
         .execute(&mut *tx)
         .await?;

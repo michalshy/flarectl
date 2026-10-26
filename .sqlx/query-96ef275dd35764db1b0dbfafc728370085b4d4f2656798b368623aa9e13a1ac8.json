@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO steps (id, run_id, name, position, status)\n        SELECT $1, $2, $3, $4, $5\n        WHERE EXISTS (SELECT 1 FROM runs WHERE id = $2 AND job_id = $6 AND status = $7)\n        ON CONFLICT (id) DO UPDATE SET id = steps.id WHERE steps.run_id = EXCLUDED.run_id\n        RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "steps",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Int4",
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "96ef275dd35764db1b0dbfafc728370085b4d4f2656798b368623aa9e13a1ac8"
+}

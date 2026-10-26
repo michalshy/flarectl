@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE steps SET status = $1, finished_at = now()\n        FROM runs\n        WHERE steps.id = $2 AND steps.run_id = $3 AND steps.status = $4\n          AND runs.id = steps.run_id AND runs.job_id = $5\n        RETURNING steps.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "steps",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7718a432721448176d535f7c69c3f9bc6ed016cecdf41d49cff0a45cb84f07d0"
+}

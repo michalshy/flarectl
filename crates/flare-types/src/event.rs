@@ -37,6 +37,6 @@ pub struct Event {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventIngest {
-    pub kind: String,
+    pub kind: EventKind,
     pub payload: serde_json::Value,
 }

@@ -33,7 +33,8 @@ fn router(state: AppState) -> Router {
         .route("/health", get(routes::health))
         .merge(routes::workers::router())
         .merge(routes::jobs::router())
-        .merge(routes::runs::router());
+        .merge(routes::runs::router())
+        .merge(routes::steps::router());
 
     Router::new().nest("/v1", v1).with_state(state)
 }

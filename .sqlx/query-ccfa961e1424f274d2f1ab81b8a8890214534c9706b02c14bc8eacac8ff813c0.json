@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT 1 FROM steps\n        JOIN runs ON runs.id = steps.run_id\n        WHERE steps.id = $1 AND steps.run_id = $2 AND runs.job_id = $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ccfa961e1424f274d2f1ab81b8a8890214534c9706b02c14bc8eacac8ff813c0"
+}
