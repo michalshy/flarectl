@@ -1,9 +1,13 @@
 mod auth;
 pub mod error;
 mod routes;
+mod sweeper;
+
+use std::time::Duration;
 
 use axum::{Router, routing::get};
 use sqlx::{PgPool, postgres::PgPoolOptions};
+use sweeper::sweeper;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,8 +26,13 @@ impl AppState {
     }
 }
 
-pub async fn serve(state: AppState, addr: std::net::SocketAddr) -> anyhow::Result<()> {
+pub async fn serve(
+    state: AppState,
+    addr: std::net::SocketAddr,
+    heartbeat_timeout: Duration,
+) -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tokio::spawn(sweeper(state.clone(), heartbeat_timeout));
     axum::serve(listener, router(state)).await?;
     Ok(())
 }

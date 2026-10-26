@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -14,6 +16,8 @@ enum Command {
         listen: std::net::SocketAddr,
         #[arg(long, env = "DATABASE_URL")]
         db_url: String,
+        #[arg(long, env = "FLARE_HEARTBEAT_TIMEOUT_SECS", default_value_t = 30)]
+        heartbeat_timeout: u64,
     },
     Worker {
         #[arg(long, env = "FLARE_URL", default_value = "http://localhost:8080")]
@@ -26,7 +30,11 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     match Cli::parse().command {
-        Command::Server { listen, db_url } => flare_server::run(listen, &db_url).await,
+        Command::Server {
+            listen,
+            db_url,
+            heartbeat_timeout,
+        } => flare_server::run(listen, &db_url, Duration::from_secs(heartbeat_timeout)).await,
         Command::Worker { url } => flare_worker::run(url).await,
     }
 }
