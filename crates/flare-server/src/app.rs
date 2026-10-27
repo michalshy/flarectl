@@ -1,4 +1,5 @@
 mod auth;
+mod db;
 pub mod error;
 mod routes;
 mod sweeper;

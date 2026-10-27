@@ -7,11 +7,10 @@ use axum::{
     http::StatusCode,
 };
 use flare_types::event::{EventKind, EventSource};
-use flare_types::run::RunStatus;
 use flare_types::step::{CreateStep, FinishStep, StepStatus};
 use uuid::Uuid;
 
-use crate::app::AppState;
+use crate::app::{AppState, db};
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -27,22 +26,7 @@ pub async fn put_step(
 ) -> Result<StatusCode, AppError> {
     let mut tx = state.pool.begin().await?;
 
-    let started = sqlx::query_scalar!(
-        "INSERT INTO steps (id, run_id, name, position, status)
-        SELECT $1, $2, $3, $4, $5
-        WHERE EXISTS (SELECT 1 FROM runs WHERE id = $2 AND job_id = $6 AND status = $7)
-        ON CONFLICT (id) DO UPDATE SET id = steps.id WHERE steps.run_id = EXCLUDED.run_id
-        RETURNING id",
-        step_id,
-        run_id,
-        input.name,
-        input.position,
-        StepStatus::Running as _,
-        job.id,
-        RunStatus::Running as _,
-    )
-    .fetch_optional(&mut *tx)
-    .await?;
+    let started = db::steps::start_step(&mut tx, step_id, run_id, job.id, input.clone()).await?;
 
     if started.is_some() {
         let payload = serde_json::json!({
@@ -51,27 +35,19 @@ pub async fn put_step(
             "position": input.position,
         });
 
-        sqlx::query!(
-            "INSERT INTO events (run_id, kind, source, payload) VALUES ($1, $2, $3, $4)",
+        db::events::insert_event(
+            &mut tx,
             run_id,
-            EventKind::StepStarted as _,
-            EventSource::Server as _,
+            EventKind::StepStarted,
+            EventSource::Server,
             payload,
         )
-        .execute(&mut *tx)
         .await?;
         tx.commit().await?;
         return Ok(StatusCode::CREATED);
     }
 
-    let exists = sqlx::query_scalar!(
-        "SELECT 1 FROM runs WHERE id = $1 AND job_id = $2",
-        run_id,
-        job.id
-    )
-    .fetch_optional(&mut *tx)
-    .await?;
-    let Some(_) = exists else {
+    if !db::runs::run_exists(&mut tx, run_id, job.id).await? {
         return Err(AppError::NotFound);
     };
 
@@ -94,47 +70,23 @@ pub async fn post_finish(
 
     let mut tx = state.pool.begin().await?;
 
-    let updated = sqlx::query!(
-        "UPDATE steps SET status = $1, finished_at = now()
-        FROM runs
-        WHERE steps.id = $2 AND steps.run_id = $3 AND steps.status = $4
-          AND runs.id = steps.run_id AND runs.job_id = $5
-        RETURNING steps.id",
-        input.status as _,
-        step_id,
-        run_id,
-        StepStatus::Running as _,
-        job.id,
-    )
-    .fetch_optional(&mut *tx)
-    .await?;
+    let finished = db::steps::finish_step(&mut tx, step_id, run_id, job.id, input).await?;
 
-    if updated.is_some() {
-        sqlx::query!(
-            "INSERT INTO events (run_id, kind, source, payload) VALUES ($1, $2, $3, $4)",
+    if finished.is_some() {
+        db::events::insert_event(
+            &mut tx,
             run_id,
-            EventKind::StepFinished as _,
-            EventSource::Server as _,
-            payload
+            EventKind::StepFinished,
+            EventSource::Server,
+            payload,
         )
-        .execute(&mut *tx)
         .await?;
 
         tx.commit().await?;
         return Ok(StatusCode::NO_CONTENT);
     }
 
-    let exists = sqlx::query_scalar!(
-        "SELECT 1 FROM steps
-        JOIN runs ON runs.id = steps.run_id
-        WHERE steps.id = $1 AND steps.run_id = $2 AND runs.job_id = $3",
-        step_id,
-        run_id,
-        job.id
-    )
-    .fetch_optional(&mut *tx)
-    .await?;
-    let Some(_) = exists else {
+    if !db::steps::step_exists(&mut tx, step_id, run_id, job.id).await? {
         return Err(AppError::NotFound);
     };
 
