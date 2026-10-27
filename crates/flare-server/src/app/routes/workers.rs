@@ -8,7 +8,7 @@ use axum::{
 use flare_types::worker::{RegisterWorker, Worker};
 use uuid::Uuid;
 
-use crate::app::AppState;
+use crate::app::{AppState, db};
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -18,12 +18,8 @@ pub fn router() -> Router<AppState> {
 }
 
 async fn get_workers(State(state): State<AppState>) -> Result<Json<Vec<Worker>>, AppError> {
-    let workers = sqlx::query_as!(
-        Worker,
-        "SELECT id, name, version, labels, registered_at, last_seen_at FROM workers"
-    )
-    .fetch_all(&state.pool)
-    .await?;
+    let mut conn = state.pool.acquire().await?;
+    let workers = db::workers::get_workers(&mut conn).await?;
     Ok(Json(workers))
 }
 
@@ -31,13 +27,8 @@ async fn get_worker(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Worker>, AppError> {
-    let worker = sqlx::query_as!(
-        Worker,
-        "SELECT id, name, version, labels, registered_at, last_seen_at FROM workers WHERE id = $1",
-        id
-    )
-    .fetch_one(&state.pool)
-    .await?;
+    let mut conn = state.pool.acquire().await?;
+    let worker = db::workers::get_worker(&mut conn, id).await?;
     Ok(Json(worker))
 }
 
@@ -46,23 +37,8 @@ async fn put_worker(
     Path(id): Path<Uuid>,
     Json(input): Json<RegisterWorker>,
 ) -> Result<Json<Worker>, AppError> {
-    let inserted = sqlx::query_as!(
-        Worker,
-        "
-            INSERT INTO workers (id, name, version)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (id) DO UPDATE
-            SET name = EXCLUDED.name,
-                version = EXCLUDED.version,
-                last_seen_at = now()
-            RETURNING id, name, version, labels, registered_at, last_seen_at
-        ",
-        id,
-        input.name,
-        input.version,
-    )
-    .fetch_one(&state.pool)
-    .await?;
+    let mut conn = state.pool.acquire().await?;
+    let inserted = db::workers::insert_worker(&mut conn, id, input).await?;
     Ok(Json(inserted))
 }
 
@@ -70,11 +46,8 @@ async fn post_heartbeat(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<StatusCode, AppError> {
-    let updated = sqlx::query!("UPDATE workers SET last_seen_at = now() WHERE id = $1", id)
-        .execute(&state.pool)
-        .await?;
-
-    if updated.rows_affected() == 0 {
+    let mut conn = state.pool.acquire().await?;
+    if db::workers::touch_heartbeat(&mut conn, id).await? == 0 {
         return Err(AppError::NotFound);
     }
     Ok(StatusCode::NO_CONTENT)

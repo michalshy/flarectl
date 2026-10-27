@@ -56,7 +56,7 @@ async fn patch_job(
     Json(job): Json<RenameJob>,
 ) -> Result<Json<Job>, AppError> {
     let mut conn = state.pool.acquire().await?;
-    let job = db::jobs::patch_job(&mut conn, id, job).await?;
+    let job = db::jobs::rename_job(&mut conn, id, job).await?;
     Ok(Json(job))
 }
 

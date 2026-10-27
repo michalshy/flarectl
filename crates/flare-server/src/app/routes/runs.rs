@@ -27,7 +27,7 @@ async fn put_run(
 ) -> Result<StatusCode, AppError> {
     let mut tx = state.pool.begin().await?;
 
-    let new_run = db::runs::put_run(&mut tx, id, job.id, input).await?;
+    let new_run = db::runs::start_run(&mut tx, id, job.id, input).await?;
     let Some(_) = new_run else {
         return Err(AppError::Conflict);
     };
@@ -51,7 +51,7 @@ async fn post_heartbeat(
     Path(id): Path<Uuid>,
 ) -> Result<StatusCode, AppError> {
     let mut conn = state.pool.acquire().await?;
-    let rows = db::runs::post_heartbeat(&mut conn, id, job.id).await?;
+    let rows = db::runs::touch_heartbeat(&mut conn, id, job.id).await?;
 
     if rows == 0 {
         return Err(AppError::NotFound);
@@ -76,7 +76,7 @@ async fn post_finish(
 
     let mut tx = state.pool.begin().await?;
 
-    let finished = db::runs::post_finish(&mut tx, id, job.id, input, reason).await?;
+    let finished = db::runs::finish_run(&mut tx, id, job.id, input, reason).await?;
 
     if finished.is_some() {
         db::events::insert_event(
