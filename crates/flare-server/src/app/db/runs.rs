@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use flare_types::run::{FinishRun, RunFailure, RunStatus, StartRun};
 use sqlx::PgConnection;
 use uuid::Uuid;
@@ -75,4 +77,21 @@ pub async fn run_exists(conn: &mut PgConnection, run_id: Uuid, job_id: Uuid) -> 
     .fetch_optional(conn)
     .await
     .map(|row| row.is_some())
+}
+
+pub async fn finish_stale(conn: &mut PgConnection, timeout: Duration) -> sqlx::Result<Vec<Uuid>> {
+    let ids = sqlx::query_scalar!(
+        "UPDATE runs
+        SET status = $1, failure_reason = $2, finished_at = now()
+        WHERE status = $3 AND last_heartbeat_at < now() - $4::interval
+        RETURNING id",
+        RunStatus::Failed as _,
+        RunFailure::HeartbeatTimeout as _,
+        RunStatus::Running as _,
+        timeout as _
+    )
+    .fetch_all(conn)
+    .await?;
+
+    Ok(ids)
 }
