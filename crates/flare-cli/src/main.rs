@@ -16,6 +16,8 @@ enum Command {
         listen: std::net::SocketAddr,
         #[arg(long, env = "DATABASE_URL")]
         db_url: String,
+        #[arg(long, env = "FLARE_ADMIN_TOKEN")]
+        admin_token: String,
         #[arg(long, env = "FLARE_HEARTBEAT_TIMEOUT_SECS", default_value_t = 30)]
         heartbeat_timeout: u64,
     },
@@ -33,8 +35,21 @@ async fn main() -> anyhow::Result<()> {
         Command::Server {
             listen,
             db_url,
+            admin_token,
             heartbeat_timeout,
-        } => flare_server::run(listen, &db_url, Duration::from_secs(heartbeat_timeout)).await,
+        } => {
+            if (admin_token.is_empty()) {
+                return Err();
+            }
+
+            flare_server::run(
+                listen,
+                &db_url,
+                admin_token,
+                Duration::from_secs(heartbeat_timeout),
+            )
+            .await
+        }
         Command::Worker { url } => flare_worker::run(url).await,
     }
 }

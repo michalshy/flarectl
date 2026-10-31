@@ -1,8 +1,33 @@
 use axum::{extract::FromRequestParts, http::header::AUTHORIZATION};
 use rand::Rng;
+use sqlx::AnyPool;
 use uuid::Uuid;
 
 use crate::app::{AppState, error::AppError};
+
+pub struct AuthAdmin {}
+
+impl FromRequestParts<AppState> for AuthAdmin {
+    type Rejection = AppError;
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &AppState,
+    ) -> Result<Self, AppError> {
+        let token: &str = parts
+            .headers
+            .get(AUTHORIZATION)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.split_once(' '))
+            .and_then(|(scheme, token)| scheme.eq_ignore_ascii_case("bearer").then_some(token))
+            .ok_or(AppError::Unauthorized)?;
+
+        if token != state.admin_token {
+            return Err(AppError::Unauthorized);
+        }
+
+        Ok(AuthAdmin {})
+    }
+}
 
 pub struct AuthJob {
     pub id: Uuid,
@@ -34,4 +59,14 @@ pub fn generate_token() -> String {
     let mut bytes = [0u8; 32];
     rand::rng().fill_bytes(&mut bytes);
     format!("flare_{}", hex::encode(bytes))
+}
+
+fn extract_header(parts: &mut axum::http::request::Parts) -> Result<&str, AppError> {
+    parts
+        .headers
+        .get(AUTHORIZATION)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.split_once(' '))
+        .and_then(|(scheme, token)| scheme.eq_ignore_ascii_case("bearer").then_some(token))
+        .ok_or(AppError::Unauthorized)?
 }

@@ -11,6 +11,7 @@ use uuid::Uuid;
 
 use crate::app::AppState;
 
+// admin scoped
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/jobs", post(post_jobs).get(get_jobs))
