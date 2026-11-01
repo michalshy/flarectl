@@ -18,6 +18,7 @@ services:
     command: ["flare", "server"]
     environment:
       DATABASE_URL: postgres://flare:flare@postgres/flare
+      FLARE_ADMIN_TOKEN: flare-dev-admin-token
       RUST_LOG: info
     ports: ["8080:8080"]
     depends_on:

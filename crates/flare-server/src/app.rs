@@ -7,7 +7,7 @@ mod sweeper;
 use std::time::Duration;
 
 use axum::{Router, middleware, routing::get};
-use sqlx::{PgPool, Pool, postgres::PgPoolOptions};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use sweeper::sweeper;
 
 use crate::app::auth::{AuthAdmin, AuthJob};
