@@ -3,4 +3,12 @@ name = "flare-sdk"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "flare"
+
 [dependencies]
+anyhow.workspace = true
+flare-sdk-macros = { path = "../flare-sdk-macros" }
+
+[dev-dependencies]
+tokio.workspace = true

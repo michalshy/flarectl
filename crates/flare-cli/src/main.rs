@@ -38,8 +38,8 @@ async fn main() -> anyhow::Result<()> {
             admin_token,
             heartbeat_timeout,
         } => {
-            if (admin_token.is_empty()) {
-                return Err();
+            if admin_token.is_empty() {
+                anyhow::bail!("FLARE_ADMIN_TOKEN cannot be empty");
             }
 
             flare_server::run(

@@ -477,6 +477,15 @@ dependencies = [
 [[package]]
 name = "flare-sdk"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "flare-sdk-macros",
+ "tokio",
+]
+
+[[package]]
+name = "flare-sdk-macros"
+version = "0.1.0"
 
 [[package]]
 name = "flare-server"
@@ -491,6 +500,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "tokio",
+ "tower",
  "tracing",
  "tracing-subscriber",
  "uuid",

@@ -16,3 +16,6 @@ tracing-subscriber.workspace = true
 sqlx.workspace = true
 rand = "0.10.3"
 hex = "0.4.3"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }

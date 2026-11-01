@@ -3,6 +3,8 @@ mod db;
 pub mod error;
 mod routes;
 mod sweeper;
+#[cfg(test)]
+mod tests;
 
 use std::time::Duration;
 
@@ -10,7 +12,7 @@ use axum::{Router, middleware, routing::get};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use sweeper::sweeper;
 
-use crate::app::auth::{AuthAdmin, AuthJob};
+use crate::app::auth::AuthAdmin;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -42,17 +44,17 @@ pub async fn serve(
 }
 
 fn router(state: AppState) -> Router {
-    let v1 = Router::new()
+    let admin = Router::new()
         .merge(routes::jobs::router())
         .merge(routes::workers::router())
         .route_layer(middleware::from_extractor_with_state::<AuthAdmin, _>(
             state.clone(),
-        ))
+        ));
+
+    let v1 = Router::new()
+        .merge(admin)
         .merge(routes::runs::router())
         .merge(routes::steps::router())
-        .route_layer(middleware::from_extractor_with_state::<AuthJob, _>(
-            state.clone(),
-        ))
         .route("/health", get(routes::health));
 
     Router::new().nest("/v1", v1).with_state(state)
