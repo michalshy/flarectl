@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::step::Step;
+
 #[derive(Default, Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
@@ -60,4 +62,19 @@ pub struct StartRun {
 pub struct FinishRun {
     pub final_status: RunStatus,
     pub exit_code: Option<i32>,
+}
+
+#[derive(Deserialize)]
+pub struct ListRuns {
+    pub job_id: Option<Uuid>,
+    pub status: Option<RunStatus>,
+    pub limit: Option<i64>,
+    pub before: Option<DateTime<Utc>>,
+}
+
+#[derive(Serialize)]
+pub struct RunDetail {
+    #[serde(flatten)]
+    pub run: Run,
+    pub steps: Vec<Step>,
 }

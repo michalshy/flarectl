@@ -1,13 +1,13 @@
 use crate::app::auth::AuthJob;
 use crate::app::error::AppError;
-use axum::routing::{post, put};
+use axum::routing::{get, post, put};
 use axum::{
     Router,
     extract::{Json, Path, State},
     http::StatusCode,
 };
-use flare_types::event::{EventKind, EventSource};
-use flare_types::run::{FinishRun, RunFailure, RunStatus, StartRun};
+use flare_types::event::{Event, EventKind, EventSource};
+use flare_types::run::{FinishRun, Run, RunFailure, RunStatus, StartRun};
 use uuid::Uuid;
 
 use crate::app::{AppState, db};
@@ -17,6 +17,13 @@ pub fn router() -> Router<AppState> {
         .route("/runs/{id}", put(put_run))
         .route("/runs/{id}/heartbeat", post(post_heartbeat))
         .route("/runs/{id}/finish", post(post_finish))
+}
+
+pub fn admin_router() -> Router<AppState> {
+    Router::new()
+        .route("/runs", get(get_runs))
+        .route("/runs/{id}", get(get_run))
+        .route("/runs/{id}/events", get(get_events))
 }
 
 async fn put_run(
@@ -110,4 +117,18 @@ async fn post_finish(
     tx.commit().await?;
 
     Err(AppError::Conflict)
+}
+
+async fn get_runs(State(state): State<AppState>) -> Result<Json<Vec<Run>>, AppError> {}
+
+async fn get_run(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<Run>, AppError> {
+}
+
+async fn get_events(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<Vec<Event>>, AppError> {
 }
