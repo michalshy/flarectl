@@ -1,4 +1,4 @@
-use flare_types::event::{EventKind, EventSource};
+use flare_types::event::{Event, EventKind, EventSource};
 use sqlx::PgConnection;
 use uuid::Uuid;
 
@@ -19,4 +19,22 @@ pub async fn insert_event(
     .execute(conn)
     .await?;
     Ok(())
+}
+
+pub async fn select_events(conn: &mut PgConnection, run_id: Uuid) -> sqlx::Result<Vec<Event>> {
+    let events = sqlx::query_as!(
+        Event,
+        r#"SELECT id, run_id,
+            kind   AS "kind: EventKind",
+            source AS "source: EventSource",
+            payload, created_at
+            FROM events
+            WHERE run_id = $1
+            ORDER BY id"#,
+        run_id
+    )
+    .fetch_all(conn)
+    .await?;
+
+    Ok(events)
 }

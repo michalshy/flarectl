@@ -47,6 +47,7 @@ fn router(state: AppState) -> Router {
     let admin = Router::new()
         .merge(routes::jobs::router())
         .merge(routes::workers::router())
+        .merge(routes::runs::admin_router())
         .route_layer(middleware::from_extractor_with_state::<AuthAdmin, _>(
             state.clone(),
         ));

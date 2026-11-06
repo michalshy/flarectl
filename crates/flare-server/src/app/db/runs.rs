@@ -1,8 +1,12 @@
 use std::time::Duration;
 
-use flare_types::run::{FinishRun, RunFailure, RunStatus, StartRun};
+use flare_types::run::{
+    FinishRun, ListRuns, Run, RunDetail, RunFailure, RunStatus, RunTrigger, StartRun,
+};
 use sqlx::PgConnection;
 use uuid::Uuid;
+
+use crate::app::db::steps::select_steps;
 
 pub async fn start_run(
     conn: &mut PgConnection,
@@ -68,9 +72,14 @@ pub async fn finish_run(
     Ok(updated)
 }
 
-pub async fn run_exists(conn: &mut PgConnection, run_id: Uuid, job_id: Uuid) -> sqlx::Result<bool> {
+/// `job_id = None` skips job scoping — admin routes only.
+pub async fn run_exists(
+    conn: &mut PgConnection,
+    run_id: Uuid,
+    job_id: Option<Uuid>,
+) -> sqlx::Result<bool> {
     sqlx::query_scalar!(
-        "SELECT 1 FROM runs WHERE id = $1 AND job_id = $2",
+        "SELECT 1 FROM runs WHERE id = $1 AND ($2::uuid IS NULL OR job_id = $2)",
         run_id,
         job_id
     )
@@ -94,4 +103,58 @@ pub async fn finish_stale(conn: &mut PgConnection, timeout: Duration) -> sqlx::R
     .await?;
 
     Ok(ids)
+}
+
+pub async fn select_run(conn: &mut PgConnection, run_id: Uuid) -> sqlx::Result<Option<Run>> {
+    let run = sqlx::query_as!(
+        Run,
+        r#"SELECT id, job_id, worker_id,
+        trigger        AS "trigger: RunTrigger",
+        status         AS "status: RunStatus",
+        failure_reason AS "failure_reason: RunFailure",
+        started_at, last_heartbeat_at, finished_at, exit_code
+        FROM runs WHERE id = $1"#,
+        run_id
+    )
+    .fetch_optional(conn)
+    .await?;
+
+    Ok(run)
+}
+
+pub async fn inspect_run(conn: &mut PgConnection, run_id: Uuid) -> sqlx::Result<Option<RunDetail>> {
+    let Some(run) = select_run(conn, run_id).await? else {
+        return Ok(None);
+    };
+
+    let steps = select_steps(conn, run_id).await?;
+
+    Ok(Some(RunDetail { run, steps }))
+}
+
+pub async fn list_runs(
+    conn: &mut PgConnection,
+    q: &ListRuns,
+    limit: i64,
+) -> sqlx::Result<Vec<Run>> {
+    sqlx::query_as!(
+        Run,
+        r#"SELECT id, job_id, worker_id,
+                    trigger        AS "trigger: RunTrigger",
+                    status         AS "status: RunStatus",
+                    failure_reason AS "failure_reason: RunFailure",
+                    started_at, last_heartbeat_at, finished_at, exit_code
+             FROM runs
+             WHERE ($1::uuid        IS NULL OR job_id     = $1)
+               AND ($2::text        IS NULL OR status     = $2)
+               AND ($3::timestamptz IS NULL OR started_at < $3)
+             ORDER BY started_at DESC
+             LIMIT $4"#,
+        q.job_id,
+        q.status as _,
+        q.before,
+        limit,
+    )
+    .fetch_all(conn)
+    .await
 }

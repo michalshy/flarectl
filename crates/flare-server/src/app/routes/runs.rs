@@ -1,5 +1,7 @@
 use crate::app::auth::AuthJob;
+use crate::app::db::events::select_events;
 use crate::app::error::AppError;
+use axum::extract::Query;
 use axum::routing::{get, post, put};
 use axum::{
     Router,
@@ -7,7 +9,7 @@ use axum::{
     http::StatusCode,
 };
 use flare_types::event::{Event, EventKind, EventSource};
-use flare_types::run::{FinishRun, Run, RunFailure, RunStatus, StartRun};
+use flare_types::run::{FinishRun, ListRuns, Run, RunDetail, RunFailure, RunStatus, StartRun};
 use uuid::Uuid;
 
 use crate::app::{AppState, db};
@@ -101,7 +103,7 @@ async fn post_finish(
         return Ok(StatusCode::NO_CONTENT);
     }
 
-    if !db::runs::run_exists(&mut tx, id, job.id).await? {
+    if !db::runs::run_exists(&mut tx, id, Some(job.id)).await? {
         return Err(AppError::NotFound);
     }
 
@@ -119,16 +121,34 @@ async fn post_finish(
     Err(AppError::Conflict)
 }
 
-async fn get_runs(State(state): State<AppState>) -> Result<Json<Vec<Run>>, AppError> {}
-
 async fn get_run(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-) -> Result<Json<Run>, AppError> {
+) -> Result<Json<RunDetail>, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let Some(res) = db::runs::inspect_run(&mut conn, id).await? else {
+        return Err(AppError::NotFound);
+    };
+    Ok(Json(res))
 }
 
 async fn get_events(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Vec<Event>>, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let events = select_events(&mut conn, id).await?;
+    if events.is_empty() && !db::runs::run_exists(&mut conn, id, None).await? {
+        return Err(AppError::NotFound);
+    }
+    Ok(Json(events))
+}
+
+async fn get_runs(
+    State(state): State<AppState>,
+    Query(q): Query<ListRuns>,
+) -> Result<Json<Vec<Run>>, AppError> {
+    let limit = q.limit.unwrap_or(50).clamp(1, 200);
+    let mut conn = state.pool.acquire().await?;
+    Ok(Json(db::runs::list_runs(&mut conn, &q, limit).await?))
 }

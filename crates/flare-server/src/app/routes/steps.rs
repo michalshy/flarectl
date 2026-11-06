@@ -47,7 +47,7 @@ pub async fn put_step(
         return Ok(StatusCode::CREATED);
     }
 
-    if !db::runs::run_exists(&mut tx, run_id, job.id).await? {
+    if !db::runs::run_exists(&mut tx, run_id, Some(job.id)).await? {
         return Err(AppError::NotFound);
     };
 

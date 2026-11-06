@@ -1,6 +1,6 @@
 use flare_types::{
     run::RunStatus,
-    step::{CreateStep, FinishStep, StepStatus},
+    step::{CreateStep, FinishStep, Step, StepStatus},
 };
 use sqlx::PgConnection;
 use uuid::Uuid;
@@ -85,4 +85,20 @@ pub async fn step_exists(
     .fetch_optional(conn)
     .await
     .map(|row| row.is_some())
+}
+
+pub async fn select_steps(conn: &mut PgConnection, run_id: Uuid) -> sqlx::Result<Vec<Step>> {
+    let steps = sqlx::query_as!(
+        Step,
+        r#"SELECT id, run_id, name, position,
+        status AS "status: StepStatus",
+        started_at, finished_at
+        FROM steps WHERE run_id = $1
+        ORDER BY position"#,
+        run_id
+    )
+    .fetch_all(conn)
+    .await?;
+
+    Ok(steps)
 }
