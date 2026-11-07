@@ -5,6 +5,7 @@ use uuid::Uuid;
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum EventSource {
     Client,
@@ -14,6 +15,7 @@ pub enum EventSource {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum EventKind {
     Started,
@@ -26,6 +28,7 @@ pub enum EventKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Event {
     pub id: i64,
     pub run_id: Uuid,

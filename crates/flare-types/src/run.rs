@@ -45,17 +45,22 @@ pub enum RunFailure {
 pub struct Run {
     pub id: Uuid,
     pub job_id: Uuid,
+    #[cfg_attr(feature = "utoipa", schema(required = true))]
     pub worker_id: Option<Uuid>,
     pub trigger: RunTrigger,
     pub status: RunStatus,
+    #[cfg_attr(feature = "utoipa", schema(required = true))]
     pub failure_reason: Option<RunFailure>,
     pub started_at: DateTime<Utc>,
     pub last_heartbeat_at: DateTime<Utc>,
+    #[cfg_attr(feature = "utoipa", schema(required = true))]
     pub finished_at: Option<DateTime<Utc>>,
+    #[cfg_attr(feature = "utoipa", schema(required = true))]
     pub exit_code: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct StartRun {
     pub worker_id: Option<Uuid>,
     #[serde(default)]
@@ -63,12 +68,15 @@ pub struct StartRun {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct FinishRun {
     pub final_status: RunStatus,
     pub exit_code: Option<i32>,
 }
 
 #[derive(Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::IntoParams))]
+#[cfg_attr(feature = "utoipa", into_params(parameter_in = Query))]
 pub struct ListRuns {
     pub job_id: Option<Uuid>,
     pub status: Option<RunStatus>,

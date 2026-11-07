@@ -6,7 +6,10 @@ use axum::{
 use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 
-use crate::app::{AppState, router};
+use crate::app::{
+    AppState,
+    api::{openapi, router},
+};
 
 const ADMIN_TOKEN: &str = "flare_test_admin";
 const ID: &str = "00000000-0000-0000-0000-000000000000";
@@ -85,4 +88,21 @@ async fn job_routes_require_a_token() {
 #[tokio::test]
 async fn health_is_public() {
     assert_eq!(status("GET", "/v1/health", None).await, StatusCode::OK);
+}
+
+#[test]
+fn openapi_spec_is_up_to_date() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../api/openapi.json");
+    let spec = openapi().to_pretty_json().unwrap() + "\n";
+
+    if std::env::var_os("UPDATE_OPENAPI").is_some() {
+        std::fs::write(&path, &spec).unwrap();
+        return;
+    }
+
+    let committed = std::fs::read_to_string(&path).unwrap_or_default();
+    assert!(
+        committed == spec,
+        "api/openapi.json is out of date, run `make openapi`"
+    );
 }

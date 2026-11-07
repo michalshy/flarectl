@@ -1,3 +1,4 @@
+mod api;
 mod auth;
 mod db;
 pub mod error;
@@ -8,11 +9,8 @@ mod tests;
 
 use std::time::Duration;
 
-use axum::{Router, middleware, routing::get};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use sweeper::sweeper;
-
-use crate::app::auth::AuthAdmin;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -39,24 +37,6 @@ pub async fn serve(
 ) -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tokio::spawn(sweeper(state.clone(), heartbeat_timeout));
-    axum::serve(listener, router(state)).await?;
+    axum::serve(listener, api::router(state)).await?;
     Ok(())
-}
-
-fn router(state: AppState) -> Router {
-    let admin = Router::new()
-        .merge(routes::jobs::router())
-        .merge(routes::workers::router())
-        .merge(routes::runs::admin_router())
-        .route_layer(middleware::from_extractor_with_state::<AuthAdmin, _>(
-            state.clone(),
-        ));
-
-    let v1 = Router::new()
-        .merge(admin)
-        .merge(routes::runs::router())
-        .merge(routes::steps::router())
-        .route("/health", get(routes::health));
-
-    Router::new().nest("/v1", v1).with_state(state)
 }

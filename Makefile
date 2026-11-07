@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down reset logs ps psql db prepare rebuild server worker migrate check
+.PHONY: help up down reset logs ps psql db prepare rebuild server worker migrate check openapi
 
 S ?=   # service for `make logs S=server`
 
@@ -46,6 +46,9 @@ worker: ## Run a worker natively against localhost:8080
 
 migrate: db ## Run sqlx migrations against DATABASE_URL
 	sqlx migrate run --source crates/flare-server/migrations
+
+openapi: ## Regenerate api/openapi.json from the server code
+	UPDATE_OPENAPI=1 SQLX_OFFLINE=true cargo test -p flare-server openapi_spec_is_up_to_date
 
 check: ## fmt + clippy + tests, same as CI
 	cargo fmt --all --check

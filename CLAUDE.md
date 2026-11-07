@@ -60,3 +60,14 @@ read env vars themselves. Config flows CLI → `run()`.
 `query!` macros are checked against a live DB at compile time; Docker and `make check` build with
 `SQLX_OFFLINE=true` and read `.sqlx/` instead. After adding or changing a `query!`, run
 `make prepare` and commit `.sqlx/`, or offline builds fail.
+
+## OpenAPI (utoipa)
+
+The spec is committed at `api/openapi.json` and checked by a test. After changing a documented
+route or a `ToSchema` type, run `make openapi` and commit the file, or `make check` fails.
+
+- Output types (responses): mark `Option` fields
+  `#[cfg_attr(feature = "utoipa", schema(required = true))]`, because serde always sends the key
+  (as `null`). Skip this only if the field uses `skip_serializing_if`.
+- Input types (request bodies, query params): leave `Option` fields optional.
+- Don't share one type between request and response; split it instead.

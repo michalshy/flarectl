@@ -2,32 +2,50 @@ use crate::app::auth::AuthJob;
 use crate::app::db::events::select_events;
 use crate::app::error::AppError;
 use axum::extract::Query;
-use axum::routing::{get, post, put};
 use axum::{
-    Router,
     extract::{Json, Path, State},
     http::StatusCode,
 };
+use flare_types::error::FlareErrorResponse;
 use flare_types::event::{Event, EventKind, EventSource};
 use flare_types::run::{FinishRun, ListRuns, Run, RunDetail, RunFailure, RunStatus, StartRun};
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 use uuid::Uuid;
 
 use crate::app::{AppState, db};
 
-pub fn router() -> Router<AppState> {
-    Router::new()
-        .route("/runs/{id}", put(put_run))
-        .route("/runs/{id}/heartbeat", post(post_heartbeat))
-        .route("/runs/{id}/finish", post(post_finish))
+pub fn job_api() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(put_run))
+        .routes(routes!(post_heartbeat))
+        .routes(routes!(post_finish))
 }
 
-pub fn admin_router() -> Router<AppState> {
-    Router::new()
-        .route("/runs", get(get_runs))
-        .route("/runs/{id}", get(get_run))
-        .route("/runs/{id}/events", get(get_events))
+pub fn admin_api() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(get_runs))
+        .routes(routes!(get_run))
+        .routes(routes!(get_events))
 }
 
+/// Start a run with a client-chosen id. Repeating it for a running run of the same job succeeds.
+#[utoipa::path(
+    put,
+    path = "/runs/{id}",
+    tag = "runs",
+    params(
+        ("id" = Uuid, Path, description = "Run id"),
+    ),
+    request_body = StartRun,
+    responses(
+        (status = CREATED, description = "Run started"),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = CONFLICT, description = "Run id belongs to another job or the run is no longer running", body = FlareErrorResponse),
+        (status = UNPROCESSABLE_ENTITY, description = "Referenced worker does not exist", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn put_run(
     State(state): State<AppState>,
     job: AuthJob,
@@ -54,6 +72,21 @@ async fn put_run(
     Ok(StatusCode::CREATED)
 }
 
+/// Record a heartbeat for a running run.
+#[utoipa::path(
+    post,
+    path = "/runs/{id}/heartbeat",
+    tag = "runs",
+    params(
+        ("id" = Uuid, Path, description = "Run id"),
+    ),
+    responses(
+        (status = NO_CONTENT, description = "Heartbeat recorded"),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = NOT_FOUND, description = "No running run with this id for this job", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn post_heartbeat(
     State(state): State<AppState>,
     job: AuthJob,
@@ -68,6 +101,24 @@ async fn post_heartbeat(
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Finish a run with its final status.
+#[utoipa::path(
+    post,
+    path = "/runs/{id}/finish",
+    tag = "runs",
+    params(
+        ("id" = Uuid, Path, description = "Run id"),
+    ),
+    request_body = FinishRun,
+    responses(
+        (status = NO_CONTENT, description = "Run finished"),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = NOT_FOUND, description = "No such run for this job", body = FlareErrorResponse),
+        (status = CONFLICT, description = "Run already finished; recorded as a late report", body = FlareErrorResponse),
+        (status = UNPROCESSABLE_ENTITY, description = "Final status can not be running", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn post_finish(
     State(state): State<AppState>,
     job: AuthJob,
@@ -121,6 +172,21 @@ async fn post_finish(
     Err(AppError::Conflict)
 }
 
+/// Get a run with its steps.
+#[utoipa::path(
+    get,
+    path = "/runs/{id}",
+    tag = "runs",
+    params(
+        ("id" = Uuid, Path, description = "Run id"),
+    ),
+    responses(
+        (status = OK, description = "Run found", body = RunDetail),
+        (status = NOT_FOUND, description = "No such run", body = FlareErrorResponse),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn get_run(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -132,6 +198,21 @@ async fn get_run(
     Ok(Json(res))
 }
 
+/// List the event timeline of a run.
+#[utoipa::path(
+    get,
+    path = "/runs/{id}/events",
+    tag = "runs",
+    params(
+        ("id" = Uuid, Path, description = "Run id"),
+    ),
+    responses(
+        (status = OK, description = "Events of the run", body = Vec<Event>),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = NOT_FOUND, description = "No such run", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn get_events(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -144,6 +225,18 @@ async fn get_events(
     Ok(Json(events))
 }
 
+/// List runs, newest first.
+#[utoipa::path(
+    get,
+    path = "/runs",
+    tag = "runs",
+    params(ListRuns),
+    responses(
+        (status = OK, description = "Runs matching the filters", body = Vec<Run>),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn get_runs(
     State(state): State<AppState>,
     Query(q): Query<ListRuns>,

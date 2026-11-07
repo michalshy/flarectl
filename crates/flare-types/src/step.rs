@@ -22,6 +22,7 @@ pub struct Step {
     pub position: i32,
     pub status: StepStatus,
     pub started_at: DateTime<Utc>,
+    #[cfg_attr(feature = "utoipa", schema(required = true))]
     pub finished_at: Option<DateTime<Utc>>,
 }
 
