@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-flare-types = { path = "../flare-types", features = ["sqlx"] }
+flare-types = { path = "../flare-types", features = ["sqlx", "utoipa"] }
 serde_json.workspace = true
 uuid.workspace = true
 anyhow.workspace = true
@@ -16,6 +16,8 @@ tracing-subscriber.workspace = true
 sqlx.workspace = true
 rand = "0.10.3"
 hex = "0.4.3"
+utoipa.workspace = true
+utoipa-axum.workspace = true
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

@@ -1,5 +1,5 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
-use serde_json::json;
+use flare_types::error::FlareErrorResponse;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -22,7 +22,13 @@ impl IntoResponse for AppError {
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal error")
             }
         };
-        (status, Json(json!({"error": msg}))).into_response()
+        (
+            status,
+            Json(FlareErrorResponse {
+                error: msg.to_string(),
+            }),
+        )
+            .into_response()
     }
 }
 

@@ -5,6 +5,7 @@ use uuid::Uuid;
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum StepStatus {
     Running,
@@ -13,6 +14,7 @@ pub enum StepStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Step {
     pub id: Uuid,
     pub run_id: Uuid,

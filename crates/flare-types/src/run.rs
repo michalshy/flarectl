@@ -7,6 +7,7 @@ use crate::step::Step;
 #[derive(Default, Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RunTrigger {
     #[default]
@@ -19,6 +20,7 @@ pub enum RunTrigger {
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RunStatus {
     Running,
@@ -30,6 +32,7 @@ pub enum RunStatus {
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(type_name = "text", rename_all = "snake_case"))]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RunFailure {
     Reported,
@@ -38,6 +41,7 @@ pub enum RunFailure {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct Run {
     pub id: Uuid,
     pub job_id: Uuid,
@@ -73,6 +77,7 @@ pub struct ListRuns {
 }
 
 #[derive(Serialize)]
+#[cfg_attr(feature = "utoipa", derive(utoipa::ToSchema))]
 pub struct RunDetail {
     #[serde(flatten)]
     pub run: Run,
