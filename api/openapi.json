@@ -83,7 +83,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "admin_token": []
+          }
+        ]
       }
     },
     "/v1/runs/{id}": {
@@ -146,7 +151,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "admin_token": []
+          }
+        ]
       },
       "put": {
         "tags": [
@@ -220,7 +230,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "job_token": []
+          }
+        ]
       }
     },
     "/v1/runs/{id}/events": {
@@ -286,7 +301,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "admin_token": []
+          }
+        ]
       }
     },
     "/v1/runs/{id}/finish": {
@@ -372,7 +392,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "job_token": []
+          }
+        ]
       }
     },
     "/v1/runs/{id}/heartbeat": {
@@ -428,7 +453,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "job_token": []
+          }
+        ]
       }
     }
   },
@@ -696,6 +726,18 @@
           "succeeded",
           "failed"
         ]
+      }
+    },
+    "securitySchemes": {
+      "admin_token": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Admin token for admin panel"
+      },
+      "job_token": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Job token for running specific job"
       }
     }
   }

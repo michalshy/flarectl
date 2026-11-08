@@ -6,6 +6,7 @@ pub fn init(_url: String, _token: String) {
     todo!("store the client for #[job] and #[step]")
 }
 
+#[allow(dead_code)]
 pub struct Client {
     url: String,
     token: String,
