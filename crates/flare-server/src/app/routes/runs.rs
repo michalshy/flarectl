@@ -33,6 +33,7 @@ pub fn admin_api() -> OpenApiRouter<AppState> {
 #[utoipa::path(
     put,
     path = "/runs/{id}",
+    operation_id = "start_run",
     tag = "runs",
     params(
         ("id" = Uuid, Path, description = "Run id"),
@@ -76,6 +77,7 @@ async fn put_run(
 #[utoipa::path(
     post,
     path = "/runs/{id}/heartbeat",
+    operation_id = "heartbeat_run",
     tag = "runs",
     params(
         ("id" = Uuid, Path, description = "Run id"),
@@ -105,6 +107,7 @@ async fn post_heartbeat(
 #[utoipa::path(
     post,
     path = "/runs/{id}/finish",
+    operation_id = "finish_run",
     tag = "runs",
     params(
         ("id" = Uuid, Path, description = "Run id"),
@@ -176,6 +179,7 @@ async fn post_finish(
 #[utoipa::path(
     get,
     path = "/runs/{id}",
+    operation_id = "get_run",
     tag = "runs",
     params(
         ("id" = Uuid, Path, description = "Run id"),
@@ -202,6 +206,7 @@ async fn get_run(
 #[utoipa::path(
     get,
     path = "/runs/{id}/events",
+    operation_id = "list_run_events",
     tag = "runs",
     params(
         ("id" = Uuid, Path, description = "Run id"),
@@ -229,6 +234,7 @@ async fn get_events(
 #[utoipa::path(
     get,
     path = "/runs",
+    operation_id = "list_runs",
     tag = "runs",
     params(ListRuns),
     responses(

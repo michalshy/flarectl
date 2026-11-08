@@ -1,28 +1,57 @@
 use crate::app::error::AppError;
-use axum::routing::{get, post, put};
 use axum::{
-    Router,
     extract::{Json, Path, State},
     http::StatusCode,
 };
+use flare_types::error::FlareErrorResponse;
 use flare_types::worker::{RegisterWorker, Worker};
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 use uuid::Uuid;
 
 use crate::app::{AppState, db};
 
-pub fn router() -> Router<AppState> {
-    Router::new()
-        .route("/workers", get(get_workers))
-        .route("/workers/{id}", put(put_worker).get(get_worker))
-        .route("/workers/{id}/heartbeat", post(post_heartbeat))
+pub fn admin_api() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
+        .routes(routes!(get_workers))
+        .routes(routes!(put_worker, get_worker))
+        .routes(routes!(post_heartbeat))
 }
 
+/// List workers.
+#[utoipa::path(
+    get,
+    path = "/workers",
+    operation_id = "list_workers",
+    tag = "workers",
+    responses(
+        (status = OK, description = "Workers", body = Vec<Worker>),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn get_workers(State(state): State<AppState>) -> Result<Json<Vec<Worker>>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let workers = db::workers::get_workers(&mut conn).await?;
     Ok(Json(workers))
 }
 
+/// Get a worker.
+#[utoipa::path(
+    get,
+    path = "/workers/{id}",
+    operation_id = "get_worker",
+    tag = "workers",
+    params(
+        ("id" = Uuid, Path, description = "Worker id"),
+    ),
+    responses(
+        (status = OK, description = "Worker found", body = Worker),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = NOT_FOUND, description = "No such worker", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn get_worker(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -32,6 +61,22 @@ async fn get_worker(
     Ok(Json(worker))
 }
 
+/// Register a worker, or update it if the id exists.
+#[utoipa::path(
+    put,
+    path = "/workers/{id}",
+    operation_id = "register_worker",
+    tag = "workers",
+    params(
+        ("id" = Uuid, Path, description = "Worker id"),
+    ),
+    request_body = RegisterWorker,
+    responses(
+        (status = OK, description = "Worker registered", body = Worker),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn put_worker(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -42,6 +87,22 @@ async fn put_worker(
     Ok(Json(inserted))
 }
 
+/// Record a worker heartbeat.
+#[utoipa::path(
+    post,
+    path = "/workers/{id}/heartbeat",
+    operation_id = "heartbeat_worker",
+    tag = "workers",
+    params(
+        ("id" = Uuid, Path, description = "Worker id"),
+    ),
+    responses(
+        (status = NO_CONTENT, description = "Heartbeat recorded"),
+        (status = UNAUTHORIZED, description = "Missing or bad auth token", body = FlareErrorResponse),
+        (status = NOT_FOUND, description = "No such worker", body = FlareErrorResponse),
+        (status = INTERNAL_SERVER_ERROR, description = "Internal error", body = FlareErrorResponse),
+    )
+)]
 async fn post_heartbeat(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
