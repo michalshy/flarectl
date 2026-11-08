@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down reset logs ps psql db prepare rebuild server worker migrate check openapi
+.PHONY: help up down reset logs ps psql db prepare rebuild server worker migrate check openapi codegen
 
 S ?=   # service for `make logs S=server`
 
@@ -49,6 +49,10 @@ migrate: db ## Run sqlx migrations against DATABASE_URL
 
 openapi: ## Regenerate api/openapi.json from the server code
 	UPDATE_OPENAPI=1 SQLX_OFFLINE=true cargo test -p flare-server openapi_spec_is_up_to_date
+
+codegen: ## Generate UI API types (ui/src/api/schema.d.ts) from api/openapi.json
+	npm --prefix codegen ci
+	npm --prefix codegen run generate
 
 check: ## fmt + clippy + tests, same as CI
 	cargo fmt --all --check

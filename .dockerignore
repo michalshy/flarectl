@@ -5,3 +5,4 @@ ui/dist/
 .git/
 .env
 *.log
+codegen/node_modules/

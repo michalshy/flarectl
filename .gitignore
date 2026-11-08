@@ -1,2 +1,3 @@
 target
 .env
+codegen/node_modules
