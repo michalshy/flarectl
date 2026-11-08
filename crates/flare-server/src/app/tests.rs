@@ -47,6 +47,9 @@ async fn admin_routes_reject_bad_tokens() {
         ("GET", format!("/v1/workers/{ID}")),
         ("PUT", format!("/v1/workers/{ID}")),
         ("POST", format!("/v1/workers/{ID}/heartbeat")),
+        ("GET", "/v1/runs".to_string()),
+        ("GET", format!("/v1/runs/{ID}")),
+        ("GET", format!("/v1/runs/{ID}/events")),
     ];
     // same length as the real token, then a prefix of it
     let tokens = [None, Some("flare_test_wrong"), Some(&ADMIN_TOKEN[..5])];

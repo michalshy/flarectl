@@ -138,7 +138,7 @@ async fn post_finish(
 
     let finished = db::runs::finish_run(&mut tx, id, job.id, input, reason).await?;
 
-    if finished.is_some() {
+    if let Some(finished) = finished {
         db::events::insert_event(
             &mut tx,
             id,
@@ -148,7 +148,7 @@ async fn post_finish(
         )
         .await?;
 
-        db::steps::fail_running_steps(&mut tx, finished.unwrap()).await?;
+        db::steps::fail_running_steps(&mut tx, finished).await?;
 
         tx.commit().await?;
         return Ok(StatusCode::NO_CONTENT);

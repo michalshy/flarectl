@@ -1,3 +1,3 @@
-pub async fn run(url: String) -> anyhow::Result<()> {
+pub async fn run(_url: String) -> anyhow::Result<()> {
     Ok(())
 }
