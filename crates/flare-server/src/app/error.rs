@@ -1,5 +1,5 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
-use flare_types::error::FlareErrorResponse;
+use flare_types::error::{ErrorCode, FlareErrorResponse};
 
 #[derive(Debug)]
 pub enum AppError {
@@ -12,19 +12,34 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        let (status, msg) = match self {
-            AppError::NotFound => (StatusCode::NOT_FOUND, "not found"),
-            AppError::Conflict => (StatusCode::CONFLICT, "conflicting unique value"),
-            AppError::Validation(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized"),
+        let (status, code, msg) = match self {
+            AppError::NotFound => (StatusCode::NOT_FOUND, ErrorCode::NotFound, "not found"),
+            AppError::Conflict => (
+                StatusCode::CONFLICT,
+                ErrorCode::Conflict,
+                "conflicting unique value",
+            ),
+            AppError::Validation(msg) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, ErrorCode::Validation, msg)
+            }
+            AppError::Unauthorized => (
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::Unauthorized,
+                "unauthorized",
+            ),
             AppError::Db(e) => {
                 tracing::error!(?e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "internal error")
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    ErrorCode::Internal,
+                    "internal error",
+                )
             }
         };
         (
             status,
             Json(FlareErrorResponse {
+                code,
                 error: msg.to_string(),
             }),
         )
