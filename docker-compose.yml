@@ -25,5 +25,14 @@ services:
       postgres: { condition: service_healthy }
     restart: on-failure
 
+  ui:
+    build: ./ui
+    image: flare-ui:dev
+    environment:
+      FLARE_API_URL: http://server:8080
+    ports: ["3000:80"]
+    depends_on: [server]
+    restart: on-failure
+
 volumes:
   pgdata:

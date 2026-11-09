@@ -1,12 +1,12 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down reset logs ps psql db prepare rebuild server worker migrate check openapi codegen
+.PHONY: help up down reset logs ps psql db prepare rebuild server worker ui migrate check openapi codegen
 
 S ?=   # service for `make logs S=server`
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "} {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-up: prepare ## Build and start postgres + server, wait until ready
+up: prepare ## Build and start postgres + server + ui (:3000), wait until ready
 	docker compose up -d --build --wait
 	@docker compose ps
 
@@ -43,6 +43,10 @@ server: ## Run the server natively (needs postgres: make up or docker compose up
 
 worker: ## Run a worker natively against localhost:8080
 	cargo run -p flare-cli -- worker --url http://localhost:8080
+
+ui: ## Run the UI dev server with hot reload on :5173 (API proxied to localhost:8080)
+	@[ -d ui/node_modules ] || npm --prefix ui ci
+	npm --prefix ui run dev
 
 migrate: db ## Run sqlx migrations against DATABASE_URL
 	sqlx migrate run --source crates/flare-server/migrations

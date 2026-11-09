@@ -39,6 +39,11 @@
   --color-link: var(--link);
   --color-glass-border: var(--glass-border);
   --color-selected: var(--selected);
+  --color-logo-horizon: var(--logo-horizon);
+  --color-blob-green: var(--blob-green);
+  --color-blob-yellow: var(--blob-yellow);
+  --color-blob-brown: var(--blob-brown);
+  --color-blob-khaki: var(--blob-khaki);
 
   --color-status-succeeded: var(--status-succeeded);
   --color-status-succeeded-bg: var(--status-succeeded-bg);
@@ -93,8 +98,11 @@
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --glass-shadow: 0 12px 40px rgba(70, 60, 20, 0.1);
   --selected: rgba(255, 255, 255, 0.85); /* active nav item, active tab */
+  --button-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.35); /* top edge of the primary button */
 
-  /* background blobs (not used yet) */
+  --logo-horizon: #435218; /* dark moss bar under the spark (components/Logo.tsx) */
+
+  /* background blobs (components/Backdrop.tsx) */
   --blob-green: #a9bd6e;
   --blob-yellow: #e6c955;
   --blob-brown: #c99f72;
