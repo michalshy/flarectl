@@ -3,128 +3,135 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
+/*
+ * Light theme only. This variant stays on purpose: shadcn components contain `dark:` classes,
+ * and without it Tailwind would apply them whenever the OS is in dark mode. Tied to a `.dark`
+ * class that is never set, they never apply.
+ */
 @custom-variant dark (&:is(.dark *));
 
+/* Exposes the tokens below as Tailwind classes: bg-primary, text-status-failed, text-link, ... */
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Inter Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: "Inter Variable", sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-link: var(--link);
+  --color-glass-border: var(--glass-border);
+  --color-selected: var(--selected);
+
+  --color-status-succeeded: var(--status-succeeded);
+  --color-status-succeeded-bg: var(--status-succeeded-bg);
+  --color-status-succeeded-mark: var(--status-succeeded-mark);
+  --color-status-failed: var(--status-failed);
+  --color-status-failed-bg: var(--status-failed-bg);
+  --color-status-failed-mark: var(--status-failed-mark);
+  --color-status-running: var(--status-running);
+  --color-status-running-bg: var(--status-running-bg);
+  --color-status-running-mark: var(--status-running-mark);
+  --color-status-aborted: var(--status-aborted);
+  --color-status-aborted-bg: var(--status-aborted-bg);
+  --color-status-aborted-mark: var(--status-aborted-mark);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* "Moss glass": earthy palette, translucent panels. Never hard-code a hex in a component. */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  /* shadcn core */
+  --background: #e9e5d0;
+  --foreground: #26281a;
+  --card: rgba(255, 253, 244, 0.5); /* glass */
+  --card-foreground: #26281a;
+  --popover: #f6f3e4; /* opaque: menus, dialogs, tooltips */
+  --popover-foreground: #26281a;
+  --primary: #cfa022; /* mustard */
+  --primary-foreground: #1f1b0a;
+  --secondary: rgba(70, 62, 25, 0.07);
+  --secondary-foreground: #26281a;
+  --muted: rgba(70, 62, 25, 0.07);
+  --muted-foreground: #4e4f38;
+  --accent: rgba(70, 62, 25, 0.1); /* hover background */
+  --accent-foreground: #26281a;
+  --destructive: #8f3d1b;
+  --destructive-foreground: #ffffff;
+  --border: rgba(70, 62, 25, 0.12);
+  --input: rgba(70, 62, 25, 0.16);
+  --ring: #6f9838;
+  --radius: 0.75rem;
+
+  /* Flare extras */
+  --subtle-foreground: #585842; /* table headers, keys, timestamps */
+  --link: #435218;
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 12px 40px rgba(70, 60, 20, 0.1);
+  --selected: rgba(255, 255, 255, 0.85); /* active nav item, active tab */
+
+  /* background blobs (not used yet) */
+  --blob-green: #a9bd6e;
+  --blob-yellow: #e6c955;
+  --blob-brown: #c99f72;
+  --blob-khaki: #c6bc85;
+
+  /* status: text / tint background / solid mark (shapes only, never text) */
+  --status-succeeded: #3a5914;
+  --status-succeeded-bg: rgba(110, 150, 50, 0.18);
+  --status-succeeded-mark: #6f9838;
+  --status-failed: #8f3d1b;
+  --status-failed-bg: rgba(200, 110, 60, 0.18);
+  --status-failed-mark: #bd6233;
+  --status-running: #705200;
+  --status-running-bg: rgba(226, 185, 59, 0.28);
+  --status-running-mark: #cfa022;
+  --status-aborted: #4e4f38;
+  --status-aborted-bg: rgba(120, 115, 80, 0.14);
+  --status-aborted-mark: #958d63;
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+/* Translucent panel. One level only: never put glass inside glass. */
+@utility glass {
+  background: var(--card);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
 }
